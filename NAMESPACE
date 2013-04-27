@@ -1,0 +1,6 @@
+useDynLib(tagcloud)
+#exportPattern("^[[:alpha:]]+")
+export( "tagcloud", "plot.tagcloud", "summary.tagcloud", 
+  "print.tagcloudsummary", "print.tagcloud", "editor.tagcloud",
+  "strmultline", "smoothPalette" )
+import( Rcpp )
