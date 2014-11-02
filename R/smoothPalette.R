@@ -4,11 +4,12 @@
 
 
 # turns a vector of numbers into a vector of colors
-smoothPalette <- function( x, pal= NULL, max= NULL, min= NULL, n= 9, na.color= "white" ) {
+smoothPalette <- function( x, pal= NULL, max= NULL, min= NULL, n= 9, palfunc= NULL,
+                           na.color= "white" ) {
 
-
-
-  if( missing( pal ) ){
+  if( ! missing( palfunc ) ) {
+    pal <- palfunc( n )
+  } else if( missing( pal ) ){
     pal <- colorRampPalette( c( "#cccccc", "black" ) )( n )
   } else {
     if( length( pal ) == 1 ) {

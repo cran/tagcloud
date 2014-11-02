@@ -582,7 +582,13 @@ tagcloud <- function( tags, weights= 1,
 
   if( ! missing( family ) && length( family ) == 1 && family == "random" ) {
     require( extrafont )
-    meta$family <- sample( fonts(), n.tags )
+    meta$family <- sample( extrafont::fonts(), n.tags )
+  }
+
+  if( ! missing( sel ) ) {
+    meta <- meta[ sel, ] 
+    boxes <- boxes[ sel, ]
+    n.tags <- nrow( boxes ) 
   }
 
   if( plot & ! add ) {
@@ -591,16 +597,8 @@ tagcloud <- function( tags, weights= 1,
     plot.window( xlim= c( 0, 1 ), ylim= c( 0, 1 ), asp= 1 )
   }
 
-  usr <- par( "usr" )
-
   boxes[, "cex"] <- calc.cex( meta$weights, floor, ceiling, wmin= wmin, wmax= wmax )
   boxes <- calc.sizes( meta$tags, boxes, meta$family )
-
-  if( ! missing( sel ) ) {
-    meta <- meta[ sel, ] 
-    boxes <- boxes[ sel, ]
-    n.tags <- nrow( boxes ) 
-  }
 
   if( scale == "auto" ) scale <- .auto.scale( boxes )
 

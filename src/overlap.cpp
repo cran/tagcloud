@@ -1,4 +1,6 @@
 #include "Rcpp.h"
+#include <cstdlib>
+#include <time.h>
 
 using namespace Rcpp;
 
@@ -9,7 +11,6 @@ RcppExport SEXP row_overlap( SEXP row_in, SEXP boxes_in ){
 	int row = as<int>(row_in);
   double x1, y1, w1, h1 ;
   double x2, y2, w2, h2 ;
-	bool overlap= true;
 
   row-- ;
 	if( boxes.nrow() < 2 || boxes.nrow() < row ) return wrap(false);
@@ -78,7 +79,6 @@ RcppExport SEXP any_overlap( SEXP boxes_in ){
 	NumericMatrix boxes( boxes_in ) ;
   double x1, y1, w1, h1 ;
   double x2, y2, w2, h2 ;
-	bool overlap= true;
 
   if( boxes.nrow() < 2 )
 	return wrap(false);
@@ -110,7 +110,6 @@ RcppExport SEXP is_overlap( SEXP box_in, SEXP boxes_in ) {
   double x1=box[0], y1=box[1], w1=box[2], h1=box[3] ;
 	NumericVector bnds;
 	double x2, y2, w2, h2;
-	bool overlap= true;
 
 	for (int i=0;i < boxes.nrow();i++) {
     x2 = boxes(i,0) ;
@@ -149,8 +148,7 @@ RcppExport SEXP spiral( SEXP params_in,
          asp    = as<double>(params["aspect"]),
          maxr   = as<double>(params["maxr"]) ;
   int    dir  = as<int>(params["dir"]),
-         max_iter  = as<int>(params["max.iter"]),
-         tmp ;
+         max_iter  = as<int>(params["max.iter"]) ;
 
   while( max_iter > 0 ) {
 
@@ -217,7 +215,8 @@ RcppExport SEXP ulam( SEXP params_in,
          max_iter  = as<int>(params["max.iter"]),
          tmp ;
 
-  srand( ( unsigned ) time( NULL ) ); 
+  NumericVector foo( 1 ) ;
+  //srand( ( unsigned ) time( NULL ) ); 
 
   while( max_iter > 0 ) {
 
@@ -249,7 +248,8 @@ RcppExport SEXP ulam( SEXP params_in,
     y += dir2 * rstep * asp ;
 
     if( dr > r ) {
-      dr = rstep * 0.5 * rand() / RAND_MAX ;
+      foo = runif( 1, 0, 1 ) ;
+      dr = rstep * 0.5 * (*foo.begin()) ;
       r += rstep ;
       tmp = dir1 ;
       dir1 = -dir2 ;

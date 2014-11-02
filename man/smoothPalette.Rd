@@ -8,7 +8,9 @@
   that values correspond to the colors on a smooth gradient.
 }
 \usage{
-smoothPalette(x, pal= NULL, max = NULL, min = NULL, n = 9, na.color = "white")
+smoothPalette(x, pal= NULL, 
+              max = NULL, min = NULL, n = 9, 
+              palfunc= NULL, na.color = "white")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,10 +30,13 @@ smoothPalette(x, pal= NULL, max = NULL, min = NULL, n = 9, na.color = "white")
   as name of an RColorBrewer palette (see \code{\link{brewer.pal}}).
 }
   \item{n}{
-  Number of steps
-}
+    Number of steps
+  }
+  \item{palfunc}{
+    Palette function returned by colorRampPalette
+  }
   \item{na.color}{
-  NA values will be replaced by that color.
+  NA values will be replaced by that color
 }
 }
 \details{
@@ -52,7 +57,7 @@ January Weiner <january.weiner@gmail.com>
 \examples{
 smoothPalette( 1:3 )
 # will print:
-# "#FFFFFF" "#717171" "#000000"
+# "#CCCCCC" "#666666" "#000000"
 
 smoothPalette( 1:3, pal= "Blues" )
 # will produce:

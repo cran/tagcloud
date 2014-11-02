@@ -11,7 +11,8 @@ summary.tagcloud <- function( object, ... ) {
   ret <-  list( 
       n= nrow( boxes ), coverage= ratio,
       weights.range= range( boxes$weights ),
-      bb= bb, algorithm= attr( boxes, "algorithm" )  
+      bb= bb, algorithm= attr( boxes, "algorithm" ),
+      scale= attr( boxes, "scale" )
     ) 
 
   class( ret ) <- c( "tagcloudsummary", class( ret ) )
@@ -30,5 +31,6 @@ print.tagcloudsummary <- function( x, ... ) {
   catf( "  bb: (%.2f, %.2f), (%.2f, %.2f)\n", x$bb[1], x$bb[2], x$bb[3], x$bb[4] )
   catf( "  width: %.2f height: %.2f\n", x$bb[3] - x$bb[1], x$bb[4] - x$bb[2] )
   catf( "  algorithm: %s\n", x$algorithm )
+  catf( "  scale: %.3f\n", x$scale )
  
 }

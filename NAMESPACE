@@ -4,3 +4,4 @@ export( "tagcloud", "plot.tagcloud", "summary.tagcloud",
   "print.tagcloudsummary", "print.tagcloud", "editor.tagcloud",
   "strmultline", "smoothPalette" )
 import( Rcpp )
+importFrom( "RColorBrewer", brewer.pal )
