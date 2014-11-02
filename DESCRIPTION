@@ -1,18 +1,19 @@
 Package: tagcloud
 Type: Package
 Title: Tag Clouds
-Version: 0.4
+Version: 0.5
 Date: 2014-11-02
 Author: January Weiner
 Maintainer: January Weiner <january.weiner@gmail.com>
-Description: Tag and word clouds
+Description: Tag and Word Clouds
 License: GPL (>= 2)
 LazyLoad: yes
 Depends: Rcpp (>= 0.9.4)
 Imports: RColorBrewer
 Suggests: extrafont
 LinkingTo: Rcpp
-Packaged: 2014-11-02 13:26:06.596 UTC; january
+URL: http://logfc.wordpress.com
 NeedsCompilation: yes
+Packaged: 2014-11-06 12:13:18.247 UTC; january
 Repository: CRAN
-Date/Publication: 2014-11-03 00:53:28
+Date/Publication: 2014-11-06 15:38:49

@@ -7,25 +7,27 @@
 \alias{print.tagcloudsummary}
 \alias{print.tagcloud}
 \title{
-Generate a tag / word cloud plot
+Tag and Word Clouds
 }
 \description{
 Functions to create and display plots called tag clouds, word clouds or weighted lists, in which a
 usually large number of words is displayed in size correlated with a
 numerical value (for example, frequency in a text or enrichment of a GO
 term). This makes it easier to visualize the prominence of certain tags or
-words. Also, it looks kind of nice.
+words. Also, it looks nice.
 }
 
 \usage{
 tagcloud( tags, weights = 1, 
           algorithm = "oval", scale = "auto", 
+          scale.multiplier = 1,
           order = "size", sel= NULL,
           wmin = NULL, wmax = NULL, floor = 1, ceiling = 3, 
           family = NULL, col = NULL, fvert = 0, 
           plot = TRUE, add = FALSE)
 
-\method{plot}{tagcloud}( x, family = NULL, add = FALSE, with.box = FALSE, col = NULL, \dots )
+\method{plot}{tagcloud}( x, family = NULL, add = FALSE, with.box = FALSE, 
+  col = NULL, sel = NULL, \dots )
 
 \method{summary}{tagcloud}( object, ... )
 
@@ -48,13 +50,18 @@ tagcloud( tags, weights = 1,
   Further arguments to be passed to downstream methods.
   }
   \item{algorithm}{
-    Name of the algorithm to use. Can be "oval", "fill", "random" or
-    "list". See Details.
+    Name of the algorithm to use. Can be "oval", "fill", "random", "snake", 
+    "list" or "clist". See Details.
   }
   \item{scale}{
     If "auto", text expansion will be calculated automatically to fit the
     available space. Otherwise, a numeric value used to modify the
     calculated text sizes; tune scale to achieve a better fit.
+  }
+  \item{scale.multiplier}{
+    Multiplier for the final calculated text expansion parameter. Increase
+    if there is too much empty space around the tag cloud; decrease if
+    the tags go over the plot boundaries.
   }
   \item{order}{
     Determines in which order the tags will be drawn. Can be "size",
@@ -82,8 +89,7 @@ tagcloud( tags, weights = 1,
   \item{family}{
     Font family to use, a vector containing font families to use for each
     tag. For the \code{tagcloud} function, the special keyword "random" can
-    be used to assign random families.
-
+    be used to assign random families (requires the extrafont package).
   }
   \item{col}{
     Color or a vector containing colors to use for drawing the tags.
@@ -132,6 +138,7 @@ tagcloud( tags, weights = 1,
     \item{oval}{ -- creates an oval cloud.  }
     \item{fill}{ -- an attempt will be made to fill the available space}
     \item{random}{ -- randomly distribute tags over the available space.  This algorithm is slow and not very effective}
+    \item{snake}{ -- tags are placed clockwise around the first tag to plot}
     \item{list}{ -- create a list, one tag directly beneath another, justified left}
     \item{clist}{ -- create a list, one tag directly beneath another,
     centered}

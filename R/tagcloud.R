@@ -1,10 +1,11 @@
 tagcloud.debug <- FALSE
 #tagcloud.debug <- TRUE
-debugprf <- function( ... ) if( tagcloud.debug ) printf( ... ) 
-debugpr  <- function( ... ) if( tagcloud.debug ) print( ... )
+debugprf  <- function( ... ) if( tagcloud.debug ) print( sprintf( ... ))
+debugpr   <- function( ... ) if( tagcloud.debug ) print( ... )
+debugcatf <- function( ... ) if( tagcloud.debug ) cat( sprintf( ... ))
 
 # calculate cex from floor, ceiling and value vector
-calc.cex <- function( x, floor, ceiling, wmin= NULL, wmax= NULL ) {
+.calc.cex <- function( x, floor, ceiling, wmin= NULL, wmax= NULL ) {
 
   if( is.null( wmin ) ) wmin <- min( x )
   if( is.null( wmax ) ) wmax <- max( x )
@@ -13,12 +14,12 @@ calc.cex <- function( x, floor, ceiling, wmin= NULL, wmax= NULL ) {
   ret
 }
 
-calc.sizes <- function( tags, boxes, family ) {
+.calc.sizes <- function( tags, boxes, family ) {
 
   if( length( family ) < 2 ) family <- rep( family, length( tags ) )
 
   for( i in 1:length( tags ) ) {
-    boxes[ i, "w" ] <- strwidth( paste( "X", tags[i], sep= "" ), cex= boxes[i, "cex"], family= family[ i ] )
+    boxes[ i, "w" ] <- strwidth( paste0( "X", tags[i] ), cex= boxes[i, "cex"], family= family[ i ] )
     boxes[ i, "h" ] <- 1.35 * strheight( tags[i], cex= boxes[i, "cex"], family= family[ i ] )
   }
   boxes[ , "s" ] <- boxes[ , "w" ] * boxes[ , "h" ]
@@ -159,7 +160,7 @@ calc.sizes <- function( tags, boxes, family ) {
 
     boxes.tmp <- boxes
     boxes.tmp[, "cex"] <- boxes.tmp[,"cex"] * f
-    boxes.tmp <- calc.sizes( tags, boxes.tmp, family )
+    boxes.tmp <- .calc.sizes( tags, boxes.tmp, family )
     boxes.tmp[ vertical, c( "w", "h" ) ] <- boxes.tmp[ vertical, c( "h", "w" ) ]
     scale.new <- max( c( boxes.tmp[,"w"] / boxes[,"w"], boxes.tmp[,"h"] / boxes[,"h"] ) )
     boxes.tmp[,"x"]   <- c[1] + ( boxes.tmp[,"x"] - c[1] ) * scale.new
@@ -179,114 +180,12 @@ calc.sizes <- function( tags, boxes, family ) {
 
   boxes.orig <- boxes
   boxes[, "cex"] <- boxes[,"cex"] * f1
-  boxes <- calc.sizes( tags, boxes, family )
+  boxes <- .calc.sizes( tags, boxes, family )
   boxes[ vertical, c( "w", "h" ) ] <- boxes[ vertical, c( "h", "w" ) ]
   scale.new <- max( c( boxes[,"w"] / boxes.orig[,"w"], boxes[,"h"] / boxes.orig[,"h"] ) )
   boxes[,"x"]   <- c[1] + ( boxes[,"x"] - c[1] ) * scale.new
   boxes[,"y"]   <- c[2] + ( boxes[,"y"] - c[2] ) * scale.new
 
-  return( boxes )
-}
-
-.fit.boxes.old <- function( tags, boxes, vertical, family ) {
-
-  debugprf( "*********************************" )
-  debugprf( "initial surface index: %.3f", boxes.ratio( boxes ) )
-  c <- .box.center( boxes )
-  scale <- .get.min.scale( boxes )
-  if( any.overlap( boxes ) ) stop( "boxes overlap" )
-
-  if( scale < 1 | scale > 1.05 ) {
-    if( scale < 1 ) debugprf( "downscaling %.2f", scale )
-    else              debugprf( "upscaling %.2f", scale )
-
-    boxes.orig <- boxes
-    boxes[,"x"]   <- c[1] + ( boxes[,"x"] - c[1] ) * scale
-    boxes[,"y"]   <- c[2] + ( boxes[,"y"] - c[2] ) * scale
-    boxes <- calc.sizes( tags, boxes, family )
-    boxes[ vertical, c( "w", "h" ) ] <- boxes[ vertical, c( "h", "w" ) ]
-
-    f1 <- 0
-    f2 <- 0
-
-    boxes.tmp <- boxes
-
-    if( any.overlap( boxes.tmp ) ) {
-      f2 <- 1
-    } else {
-      f1 <- 1 
-    }
-
-
-    # find a factor for which we overlap
-    if( f2 == 0 ) {
-      f2 <- 1
-      while( ! any.overlap( boxes.tmp ) ) {
-        f2 <- f2 * 2
-        boxes.tmp <- boxes
-        boxes.tmp[ , "cex" ] <- f2 * boxes.tmp[ , "cex" ]
-        boxes.tmp <- calc.sizes( tags, boxes.tmp, family )
-        boxes.tmp[ vertical, c( "w", "h" ) ] <- boxes.tmp[ vertical, c( "h", "w" ) ]
-      }
-    }
-
-    boxes.tmp <- boxes
-
-    # find a factor for which we do not overlap
-    if( f1 == 0 ) {
-      f1 <- 1
-      while( any.overlap( boxes.tmp ) ) {
-        f1 <- f1 / 2
-        boxes.tmp <- boxes
-        boxes.tmp[ , "cex" ] <- f1 * boxes.tmp[ , "cex" ]
-        boxes.tmp <- calc.sizes( tags, boxes.tmp, family )
-        boxes.tmp[ vertical, c( "w", "h" ) ] <- boxes.tmp[ vertical, c( "h", "w" ) ]
-      }
-    }
-
-    debugprf( "f1= %.2f, f2= %.2f", f1, f2 )
-
-    # problem is, strwidth does not increase linearly with cex, so we need
-    # a try and see approach to find a cex vector that fits the new boxes best
-
-    max.tries <- 5
-
-    while( max.tries > 0 ) {
-      fn <- ( f1 + f2 ) / 2
-      boxes.tmp <- boxes
-      boxes.tmp[ , "cex" ] <- fn * boxes.tmp[ , "cex" ]
-      boxes.tmp <- calc.sizes( tags, boxes.tmp, family )
-      boxes.tmp[ vertical, c( "w", "h" ) ] <- boxes.tmp[ vertical, c( "h", "w" ) ]
-
-      if( any.overlap( boxes.tmp ) ) f2 <- fn
-      else                           f1 <- fn
-      debugprf( "tries= %d, f1= %.2f, f2= %.2f", max.tries, f1, f2 )
-      if( f2 - f1 < 0.05 * f1 ) break ;
-      max.tries <- max.tries - 1
-    }
-
-    debugprf( "optimal f: %.2f", f1 )
-    boxes[,"cex"] <- boxes[,"cex"] * f1
-    boxes <- calc.sizes( tags, boxes, family )
-    boxes[ vertical, c( "w", "h" ) ] <- boxes[ vertical, c( "h", "w" ) ]
-    debugprf( "intermediate surface index: %.3f", boxes.ratio( boxes ) )
-
-    print( range( boxes[,"w"] / boxes.orig[,"w"] ) )
-    print( range( boxes[,"h"] / boxes.orig[,"h"] ) )
-
-    if( scale > 1 ) { # upscaling
-      scale.new <- max( c( boxes[,"w"] / boxes.orig[,"w"], boxes[,"h"] / boxes.orig[,"h"] ) )
-      scale.new <- min( scale.new, scale )
-      debugprf( "scale new= %.2f", scale.new )
-      boxes[,"x"]   <- c[1] + ( boxes.orig[,"x"] - c[1] ) * scale.new
-      boxes[,"y"]   <- c[2] + ( boxes.orig[,"y"] - c[2] ) * scale.new
-    }
-
-  }
-
-  debugprf( "final surface index: %.3f", boxes.ratio( boxes ) )
-  boxes <- .center.boxes( boxes )
-  scale <- .get.min.scale( boxes )
   return( boxes )
 }
 
@@ -303,14 +202,15 @@ boxes.ratio <- function( boxes ) {
 }
 
 auto.wh <- function( boxes, mult= 2 ) {
-  ds <- dev.size()
+  #ds <- dev.size()
+  ds <- par( "pin" )
   aspect <- ds[2] / ds[1]
   w <- sum( boxes[, "w" ] ) / mult
   h <- sum( boxes[, "h" ] ) / mult
   if( h > w ) w <- h / aspect 
   else        h <- w * aspect 
-  ret <- c( w, h, aspect )
-  names( ret ) <- c( "w", "h", "aspect" )
+  ret <- c( w, h, aspect, ds )
+  names( ret ) <- c( "w", "h", "aspect", "pinw", "pinh" )
   return( ret )
 }
 
@@ -439,7 +339,32 @@ algorithm.random <- function( boxes ) {
 }
 
 
-algorithm.list <- function( boxes, centered= F ) {
+algorithm.list <- function( boxes, meta, centered= F ) {
+
+  usr   <- par( "usr" )
+  tot.h <- usr[4]-usr[3]
+  tot.w <- usr[2]-usr[1]
+  meta$vertical <- FALSE
+  boxes <- .calc.sizes( meta$tags, boxes, meta$family )
+  m <- 1.05
+
+  while( sum( boxes[,"h"] * m ) < tot.h && max( boxes[,"w"] ) < tot.w ) {
+    boxes[,"cex"] <- boxes[,"cex"] * 1.1
+    boxes <- .calc.sizes( meta$tags, boxes, meta$family )
+  }
+
+
+  while( sum( boxes[,"h"] * m ) > tot.h || max( boxes[,"w"] ) > tot.w ) {
+    boxes[,"cex"] <- boxes[,"cex"]*0.9
+    boxes <- .calc.sizes( meta$tags, boxes, meta$family )
+  }
+
+
+  boxes[1,"y"] <- 0
+
+  for( i in 2:nrow( boxes ) ) {
+    boxes[i,"y"] <- boxes[i-1,"y"] - m * boxes[i,"h"]
+  }
 
   if( centered ) {
     boxes[,"x"] <- 0 - boxes[,"w"] / 2 
@@ -447,11 +372,6 @@ algorithm.list <- function( boxes, centered= F ) {
     boxes[,"x"] <- 0
   }
 
-  boxes[1,"y"] <- 0
-
-  for( i in 2:nrow( boxes ) ) {
-    boxes[i,"y"] <- boxes[i-1,"y"] - 1.05 * boxes[i,"h"]
-  }
 
   boxes <- .center.boxes( boxes )
   return( boxes )
@@ -477,7 +397,7 @@ algorithm.ulam <- function( boxes ) {
   boxes.new <- boxes[1,,drop=F]
 
   for( i in 2:nrow( boxes ) ) {
-    catf( "\rCalculating, %d %% done", as.integer( 100 * i / nrow( boxes ) ) )
+    debugcatf( "\rCalculating, %d %% done", as.integer( 100 * i / nrow( boxes ) ) )
     r <- r.step
     x <- 0 - boxes[i,"w"]/2
     y <- 0 - boxes[i,"h"]/2
@@ -501,7 +421,7 @@ algorithm.ulam <- function( boxes ) {
     if( any.overlap( boxes[1:i,] ) ) stop() ;
   }
 
-  catf( "\n" )
+  debugcatf( "\n" )
   boxes <- .center.boxes( boxes )
   return( boxes )
 }
@@ -509,7 +429,6 @@ algorithm.ulam <- function( boxes ) {
 
 
 # spiral algorithm, like in wordle
-
 algorithm.spiral <- function( boxes ) {
 
   debugprf( "*** algorithm spiral" )
@@ -534,7 +453,7 @@ algorithm.spiral <- function( boxes ) {
 
   for( i in 2:nrow( boxes ) ) {
     if( runif( 1 ) < 0.5 ) dir <- dir * -1 
-    catf( "\rCalculating, %d %% done", as.integer( 100 * i / nrow( boxes ) ) )
+    debugcatf( "\rCalculating, %d %% done", as.integer( 100 * i / nrow( boxes ) ) )
     angle  <- runif( 1, 0, 2 * pi )
     r <- mean( boxes[,"w"] / 3 )
     overlap <- TRUE
@@ -556,14 +475,153 @@ algorithm.spiral <- function( boxes ) {
     }
   }
 
-  catf( "\n" )
+  debugcatf( "\n" )
+  boxes <- .center.boxes( boxes )
+  return( boxes )
+}
+
+.boxesbox <- function( boxes ) {
+
+  return( c( x0= min( boxes[,"x"] ),
+             y0= min( boxes[,"y"] ),
+             x1= max( boxes[,"x"] + boxes[,"w"] ),
+             y1= max( boxes[,"y"] + boxes[,"h"] ) ) )
+
+}
+
+algorithm.snake <- function( boxes, meta ) {
+  debugprf( "*** algorithm snake" )
+
+  x0 <- 0
+  y0 <- 0
+  dirs <- c( "d", "l", "u", "r" )
+  # srt  <- c(  d=270, l=180, u=90, r=0 )
+  srt  <- c(  d=270, l=0, u=90, r=0 )
+
+  meta$vertical <- FALSE
+  boxes <- .calc.sizes( meta$tags, boxes, meta$family )
+  
+  boxes[1,"x"] <- boxes[1,"y"] <- 0
+  n <- 1
+  d <- 'd'
+  px <- boxes[1,"w"]
+  py <- boxes[1,"h"]
+
+  prev.block <- c( x0=0, y0=0, x1=boxes[1,"w"], y2=boxes[1,"h"] )
+
+  for( i in 2:nrow( boxes ) ) {
+
+    if( d == 'd' ) {
+      if( py - prev.block["y0"] < boxes[i,"w"] / 2 ) {
+        d <- 'l'
+        prev.block <- .boxesbox( boxes[1:(i-1),,drop=F] )
+        px <- prev.block["x1"]
+        py <- prev.block["y0"]
+      }
+    } else if( d == 'l' ) {
+      if( px - prev.block["x0"] < boxes[i,"w"] / 2 ) {
+        d <- 'u'
+        prev.block <- .boxesbox( boxes[1:(i-1),,drop=F] )
+        px <- prev.block["x0"]
+        py <- prev.block["y0"]
+      }
+    } else  if( d == 'u' ) {
+      if( prev.block["y1"] - py < boxes[i,"w"] / 2 ) {
+        d <- 'r'
+        prev.block <- .boxesbox( boxes[1:(i-1),,drop=F] )
+        px <- prev.block["x0"]
+        py <- prev.block["y1"]
+      }
+    } else if( d == 'r' ) {
+      if( prev.block["x1"] - px < boxes[i,"w"] / 2 ) {
+        d <- 'd'
+        prev.block <- .boxesbox( boxes[1:(i-1),,drop=F] )
+        px <- prev.block["x1"]
+        py <- prev.block["y1"]
+      }
+    }
+
+    if( d %in% c( 'd', 'u' ) ) boxes[i,c("h","w")] <- boxes[i,c("w","h")]
+    boxes[i,"srt"] <- srt[d]
+
+    if( d == 'd' ) {
+      boxes[i,"x"] <- px
+      boxes[i,"y"] <- py - boxes[i,"h"]
+
+      px <- px
+      py <- boxes[i,"y"]
+    } else if( d == 'l' ) {
+      boxes[i,"x"] <- px - boxes[i,"w"]
+      boxes[i,"y"] <- py - boxes[i,"h"]
+
+      px <- boxes[i,"x"]
+      py <- py
+    } else if( d == 'u' ) {
+      boxes[i,"x"] <- px - boxes[i,"w"]
+      boxes[i,"y"] <- py
+
+      px <- px
+      py <- py + boxes[i,"h"]
+    } else if( d == 'r' ) {
+      boxes[i,"x"] <- px
+      boxes[i,"y"] <- py
+
+      px <- px + boxes[i,"w"]
+      py <- py
+    }
+
+
+    if( i == nrow( boxes ) ) break ;
+
+    if( d == 'd' ) {
+      if( py < prev.block["y0"] ) {
+        py <- prev.block["y0"]
+        prev.block <- .boxesbox( boxes[1:i,,drop=F] )
+        d <- 'l'
+      }
+    } else if( d == 'l' ) {
+      if( px < prev.block["x0"] ) {
+        px <- prev.block["x0"]
+        prev.block <- .boxesbox( boxes[1:i,,drop=F] )
+        d <- 'u'
+      }
+    } else if( d == 'u' ) {
+      if( py > prev.block["y1"] ) {
+        py <- prev.block["y1"]
+        prev.block <- .boxesbox( boxes[1:i,,drop=F] )
+        d <- 'r'
+      }
+    } else if( d == 'r' ) {
+      if( px > prev.block["x1"] ) {
+        px <- prev.block["x1"]
+        prev.block <- .boxesbox( boxes[1:i,,drop=F] )
+        d <- 'd'
+      }
+    }
+  }
+
   boxes <- .center.boxes( boxes )
   return( boxes )
 }
 
 
+
+# create a usable tagcloud object
+.tagcloud.new.object <- function( boxes, meta, algorithm, scale ) {
+
+  boxes <- as.data.frame( boxes )
+  boxes <- cbind( meta, boxes )
+  class( boxes ) <- c( "tagcloud", class( boxes ) )
+  attr( boxes, "algorithm" ) <- algorithm
+  attr( boxes, "scale" ) <- scale
+  return( boxes )
+}
+
+# ----------------------------------------------------------------------
+# main tagcloud functions
+# ----------------------------------------------------------------------
 tagcloud <- function( tags, weights= 1, 
-  algorithm= "oval", scale= "auto",
+  algorithm= "oval", scale= "auto", scale.multiplier= 1,
   order= "size", sel= NULL,
   wmin= NULL, wmax= NULL, floor= 1, ceiling= 3, 
   family= NULL, col= NULL, 
@@ -571,23 +629,28 @@ tagcloud <- function( tags, weights= 1,
   plot= TRUE, add= FALSE
    ) {
 
-  tags <- as.character( tags )
+  tags   <- as.character( tags )
   n.tags <- length( tags )
+
+  # meta holds meta information about the tags: colors, weights and font
   meta <- data.frame( tags= tags )
   meta$weights <- weights
   meta$family  <- family
   meta$colors  <- col
-  boxes <- matrix( 0, nrow= n.tags, ncol= 6 )
-  colnames( boxes ) <- c( "x", "y", "w", "h", "cex", "s" )
 
+  # boxes hold the actual positioning of the tags on the plot
+  boxes <- matrix( 0, nrow= n.tags, ncol= 7 )
+  colnames( boxes ) <- c( "x", "y", "w", "h", "cex", "s", "srt" )
+
+  # random font family specification - needs extrafont
   if( ! missing( family ) && length( family ) == 1 && family == "random" ) {
     require( extrafont )
     meta$family <- sample( extrafont::fonts(), n.tags )
   }
 
   if( ! missing( sel ) ) {
-    meta <- meta[ sel, ] 
-    boxes <- boxes[ sel, ]
+    meta   <- meta[ sel, ] 
+    boxes  <- boxes[ sel, ]
     n.tags <- nrow( boxes ) 
   }
 
@@ -597,13 +660,14 @@ tagcloud <- function( tags, weights= 1,
     plot.window( xlim= c( 0, 1 ), ylim= c( 0, 1 ), asp= 1 )
   }
 
-  boxes[, "cex"] <- calc.cex( meta$weights, floor, ceiling, wmin= wmin, wmax= wmax )
-  boxes <- calc.sizes( meta$tags, boxes, meta$family )
+  boxes[, "cex"] <- .calc.cex( meta$weights, floor, ceiling, wmin= wmin, wmax= wmax )
+  boxes <- .calc.sizes( meta$tags, boxes, meta$family )
 
   if( scale == "auto" ) scale <- .auto.scale( boxes )
+  scale <- scale * scale.multiplier
 
   boxes[,"cex"] <- boxes[,"cex"] * scale
-  boxes <- calc.sizes( meta$tags, boxes, meta$family )
+  boxes <- .calc.sizes( meta$tags, boxes, meta$family )
 
   meta$vertical <- rep( FALSE, n.tags )
   if( length( fvert ) > 1 ) {
@@ -623,49 +687,37 @@ tagcloud <- function( tags, weights= 1,
     height= order( boxes[,"h"], decreasing= T )
      )
 
-  meta <- meta[ order, ]
+  meta  <- meta[ order, ]
   boxes <- boxes[ order, ]
 
   # filter out invisible tags
-  sel <- boxes[,"h"] < 1e-6 | boxes[,"w"] < 1e-6
-  meta <- meta[ ! sel, ]
+  sel   <- boxes[,"h"] < 1e-6 | boxes[,"w"] < 1e-6
+  meta  <- meta[ ! sel, ]
   boxes <- boxes[ ! sel, ]
 
-
-  tmp <- boxes[ meta$vertical, "w" ]
-  boxes[ meta$vertical, "w" ] <- boxes[ meta$vertical, "h" ]
-  boxes[ meta$vertical, "h" ] <- tmp
+  boxes[ meta$vertical, c( "w", "h" ) ] <- boxes[ meta$vertical, c( "h", "w" ) ]
 
   algorithm <- match.arg( algorithm, 
-    c( "oval", "fill", "random", "list", "clist" ) )
+    c( "oval", "fill", "random", "list", "clist", "snake" ) )
 
   boxes <- switch( algorithm,
+      snake=algorithm.snake( boxes, meta ),
       oval=algorithm.spiral( boxes ),
       normal=algorithm.normal( boxes ),
       fill=algorithm.ulam( boxes ),
       random=algorithm.random( boxes ),
-      clist=algorithm.list( boxes, centered= TRUE ), 
-      list=algorithm.list( boxes ) )
+      clist=algorithm.list( boxes, meta, centered= TRUE ), 
+      list=algorithm.list( boxes, meta ) )
 
-  #boxes <- .fit.boxes( meta$tags, boxes, meta$vertical, meta$family )
-  #boxes <- .squeeze.boxes( boxes )
   debugprf( "final surface index: %.3f", boxes.ratio( boxes ) )
 
-  boxes <- as.data.frame( boxes )
-  boxes <- cbind( meta, boxes )
-  class( boxes ) <- c( "tagcloud", class( boxes ) )
-  attr( boxes, "algorithm" ) <- algorithm
-  attr( boxes, "scale" ) <- scale
+  boxes <- .tagcloud.new.object( boxes, meta, algorithm, scale )
 
   if( plot )  {
     debugprf( "plotting" )
-    if( tagcloud.debug ) 
-      plot( boxes, add= T, with.box= T )
-    else 
-      plot( boxes, add= T )
+    plot( boxes, add= T, with.box= tagcloud.debug )
     if( ! add ) par( old.par ) 
   }
 
   return( invisible( boxes ))
-
 }

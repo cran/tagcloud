@@ -18,6 +18,8 @@ smoothPalette <- function( x, pal= NULL, max= NULL, min= NULL, n= 9, palfunc= NU
         stop( "palette is neither a vector nor a name of a RColorBrewer palette" )
     }
   }
+
+  n <- length( pal )
   
   nas <- which( is.na( x ) )
 
