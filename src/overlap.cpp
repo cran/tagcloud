@@ -6,8 +6,9 @@ using namespace Rcpp;
 
 /* check whether row no. row_in overlaps with any other row in the boxes_in
  * matrix */
-RcppExport SEXP row_overlap( SEXP row_in, SEXP boxes_in ){
-	NumericMatrix boxes( boxes_in ) ;
+// [[Rcpp::export(name="row.overlap")]]
+LogicalVector row_overlap( NumericVector row_in, NumericMatrix boxes ){
+
 	int row = as<int>(row_in);
   double x1, y1, w1, h1 ;
   double x2, y2, w2, h2 ;
@@ -75,8 +76,8 @@ RcppExport SEXP all_overlaps( SEXP boxes_in ){
 
 /* reports whether any two rows in the matrix boxes_in overlap. Returns
  * true or false */
-RcppExport SEXP any_overlap( SEXP boxes_in ){
-	NumericMatrix boxes( boxes_in ) ;
+// [[Rcpp::export(name="any.overlap")]]
+LogicalVector any_overlap( NumericMatrix boxes ){
   double x1, y1, w1, h1 ;
   double x2, y2, w2, h2 ;
 
@@ -97,16 +98,14 @@ RcppExport SEXP any_overlap( SEXP boxes_in ){
   }
 
 	return wrap(false);
-
 }
 
 
 /* checks whether the vector box_in overlaps with any of the rows in
  * boxes_in */
-RcppExport SEXP is_overlap( SEXP box_in, SEXP boxes_in ) {
+// [[Rcpp::export(name="is.overlap")]]
+LogicalVector is_overlap( NumericVector box, NumericMatrix boxes ) {
 
-  NumericVector box( box_in ) ;
-	NumericMatrix boxes( boxes_in );
   double x1=box[0], y1=box[1], w1=box[2], h1=box[3] ;
 	NumericVector bnds;
 	double x2, y2, w2, h2;
@@ -128,12 +127,11 @@ RcppExport SEXP is_overlap( SEXP box_in, SEXP boxes_in ) {
 }
 
 /* move in a spiral */
-RcppExport SEXP spiral( SEXP params_in,
-                      SEXP boxes_in ) {
+// [[Rcpp::export(name="run.spiral")]]
+NumericVector spiral( List params,
+                      NumericMatrix boxes ) {
 
-	NumericMatrix boxes( boxes_in ) ;
   NumericVector ret( 3 ) ;
-  List params( params_in ) ;
 
 	bool overlap= true;
   double x2, y2, w2, h2 ;
@@ -192,13 +190,11 @@ RcppExport SEXP spiral( SEXP params_in,
 
 
 /* move in an ulam spiral */
-RcppExport SEXP ulam( SEXP params_in,
-                      SEXP boxes_in ) {
+// [[Rcpp::export(name="run.ulam")]]
+NumericVector ulam( List params,
+                      NumericMatrix boxes ) {
 
-	NumericMatrix boxes( boxes_in ) ;
   NumericVector ret( 3 ) ;
-  List params( params_in ) ;
-  
 
 	bool overlap= true;
   double x2, y2, w2, h2 ;

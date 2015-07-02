@@ -1,5 +1,7 @@
 
 # prints a summary for the tagcloud class
+#' @rdname tagcloud
+#' @export
 summary.tagcloud <- function( object, ... ) {
 
   boxes <- object

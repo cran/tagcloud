@@ -1,5 +1,24 @@
 # replace some spaces in a sentence by newlines to get a better looking
 # cloud
+
+
+#' Replace some spaces in multi-word sentences by newlines
+#' 
+#' Replace a space character by a newline in a multi-word sentence to get a
+#' better height / width ratio
+#' 
+#' Very long tags, for example GO Term descriptions, make a bad tag cloud.
+#' \code{strmultline} tries to chop up such a long sentence into multiple
+#' (currently two) lines, to get a better height / width ratio.
+#' 
+#' @param strings a character vector containing the multi-word sentences to be
+#' split
+#' @param ratio the desired ratio height / width
+#' @return A character vector containing the modified sentences.
+#' @author January Weiner <january.weiner@@gmail.com>
+#' @seealso \code{\link{tagcloud}}
+#' @keywords strings splitting
+#' @export strmultline
 strmultline <- function( strings, ratio= 0.2 ) {
 
   strings <- as.character( strings )
@@ -9,7 +28,6 @@ strmultline <- function( strings, ratio= 0.2 ) {
   for( i in 1:n ) {
 
     x <- splits[[i]]
-    f <- family
 
     nw <- length( x )
     if( nw == 1 ) next

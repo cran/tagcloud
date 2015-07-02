@@ -1,4 +1,6 @@
 # plots an object of the tagcloud class (or another suitable data frame)
+#' @rdname tagcloud
+#' @export
 plot.tagcloud <- function( x, family= NULL, add= FALSE, with.box= FALSE, col= NULL, sel=NULL, ... ) {
 
 
