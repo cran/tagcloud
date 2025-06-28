@@ -13,12 +13,13 @@
 #' @param x A numeric vector
 #' @param max Values of \code{x} larger than \code{max} will be replaced by
 #' \code{max}
+#' \code{max}
 #' @param min Values of \code{x} smaller than \code{min} will be replaced by
 #' \code{min}
 #' @param pal Character vector containing the color gradient onto which the
 #' numeric vector \code{x} will be mapped. By default, a gradient from white to
 #' black is generated. If it is a single character value, it will be treated as
-#' name of an RColorBrewer palette (see \code{\link{brewer.pal}}).
+#' name of an RColorBrewer palette.
 #' @param n Number of steps
 #' @param palfunc Palette function returned by colorRampPalette
 #' @param na.color NA values will be replaced by that color
@@ -26,6 +27,7 @@
 #' \code{x}, containing the matching colors.
 #' @author January Weiner <january.weiner@@gmail.com>
 #' @seealso \code{\link{tagcloud}}
+#' @seealso \link[RColorBrewer]{brewer.pal}
 #' @keywords palette mapping
 #' @examples
 #' 
@@ -51,7 +53,7 @@ smoothPalette <- function( x, pal= NULL, max= NULL, min= NULL, n= 9, palfunc= NU
   } else {
     if( length( pal ) == 1 ) {
       pal <- try( brewer.pal( n, pal ), silent= TRUE )
-      if( class( pal ) == "try-error" ) 
+      if(inherits(pal, "try-error")) 
         stop( "palette is neither a vector nor a name of a RColorBrewer palette" )
     }
   }

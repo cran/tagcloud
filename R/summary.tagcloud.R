@@ -21,9 +21,11 @@ summary.tagcloud <- function( object, ... ) {
   return( ret ) 
 }
 
+#' @export
 print.tagcloud <- function( x, ... ) 
   print.tagcloudsummary( summary.tagcloud( x ), ... ) 
 
+#' @export
 print.tagcloudsummary <- function( x, ... ) {
 
   catf( "Object of the tagcloud class\n" )

@@ -1,3 +1,5 @@
+0.7
+  - Maintainer changed to Koki Tsuyuzaki
 0.6
   - Rebuilt vignette now in knitr
   - Using the new Rcpp syntax

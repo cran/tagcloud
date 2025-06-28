@@ -1,10 +1,11 @@
 # plots an object of the tagcloud class (or another suitable data frame)
+#' @importFrom methods is
 #' @rdname tagcloud
 #' @export
 plot.tagcloud <- function( x, family= NULL, add= FALSE, with.box= FALSE, col= NULL, sel=NULL, ... ) {
 
 
-  if( ! any( class( x ) == "data.frame" ) || ! any( class( x ) == "tagcloud" ) ) {
+  if(!is(x, "tagcloud") && !is(x, "data.frame")) {
     stop( "x must be an object of class tagcloud or data.frame" )
   }
 
@@ -20,17 +21,17 @@ plot.tagcloud <- function( x, family= NULL, add= FALSE, with.box= FALSE, col= NU
 
 
   if ( !missing( family ) ) {
-    if ( length( family ) != nrow( x ) || length( family ) != 1 ) {
+    if ( length( family ) != nrow( x ) && length( family ) != 1 ) {
       stop( "Incorrect length of the family vector" )
     }
     boxes$family <- family
   }
 
   if ( !missing( col )) {
-    if ( length( col ) != nrow( x ) || length( col ) != 1 ) {
-      stop( "Incorrect length of the family vector" )
+    if ( length( col ) != nrow( x ) && length( col ) != 1 ) {
+      stop( "Incorrect length of the col vector" )
     }
-    boxes$color  <- col
+    boxes$colors  <- col
   }
 
   if ( !missing( sel ) ) {
@@ -48,7 +49,7 @@ plot.tagcloud <- function( x, family= NULL, add= FALSE, with.box= FALSE, col= NU
     text( boxes[i,"x"] + boxes[i,"w"]/2, 
           boxes[i,"y"] + boxes[i,"h"]/2, 
           boxes$tags[i], cex= boxes[i,"cex"], family= boxes$family[i], 
-          srt= srt, col= boxes$color[i] )
+          srt= srt, col= boxes$colors[i] )
   }
 
   if( ! add ) par( old.par )
